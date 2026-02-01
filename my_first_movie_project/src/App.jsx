@@ -3,7 +3,7 @@ import './App.css'
 import Search from './components/Search'
 import Spinner from './components/Spinner'
 import MovieCard from './components/MovieCard'
-
+import {useDebounce} from 'react-use';
 
 const BASE_URL = 'https://api.themoviedb.org/3'
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
@@ -23,6 +23,13 @@ const App = () => {
     const [errorMessage, setErrorMessage] = useState(null)
     const [movieList, setMovieList] = useState([])
    const [isLoading, setIsLoading] = useState(false)
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+   useDebounce(
+    () => setDebouncedSearchTerm(searchTerm),
+    1000,
+    [searchTerm]
+   );
 
     const fetchMovies = async (query=null) => {
         setIsLoading(true);
@@ -58,15 +65,10 @@ const App = () => {
 
     useEffect(() => {
         // Create a timer to delay the fetch
-        const delayDebounceFn = setTimeout(() => {
-            fetchMovies(searchTerm);
-        }, 500); // Waits 500ms (half a second) after user stops typing
-
-        // Cleanup function: If user types again before 500ms, 
-        // this cancels the previous timer and starts a new one.
-        return () => clearTimeout(delayDebounceFn);
+            fetchMovies(debouncedSearchTerm);
         
-    }, [searchTerm]);
+        
+    }, [debouncedSearchTerm]);
 
     return (
         <main>
